@@ -249,6 +249,33 @@
         margin-top: 4px;
         display: none;
     }
+
+    .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+    }
+
+    .loading-spinner {
+        width: 50px;
+        height: 50px;
+        border: 5px solid #f3f3f3;
+        border-top: 5px solid #673ab7;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
     
     /* Auto-fill button styles */
     .auto-fill-btn {
@@ -305,6 +332,26 @@
     .auto-fill-options button:hover {
         background-color: #5e35b1;
     }
+
+    /* Responsive styles */
+    @media (max-width: 600px) {
+        .form-card {
+            padding: 16px;
+        }
+        
+        .rating-options {
+            width: 200px;
+        }
+        
+        .navigation {
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .back-btn, .next-btn, .submit-btn {
+            width: 100%;
+        }
+    }
 </style>
 </head>
 <body>
@@ -318,8 +365,11 @@
         </div>
     </div>
 
+    <!-- Thêm iframe ẩn để gửi dữ liệu -->
+    <iframe name="hidden-iframe" id="hidden-iframe" style="display:none;"></iframe>
+
     <!-- Form chính để người dùng nhập liệu -->
-    <form id="survey-form" method="POST" action="https://docs.google.com/forms/u/0/d/e/1FAIpQLSeiG4VFitE6OY52EmPz2LgQqBrXgKoNn-EqokJeqZhib3K8WA/formResponse">
+    <form id="survey-form" target="hidden-iframe" method="POST" action="https://docs.google.com/forms/u/0/d/e/1FAIpQLSeiG4VFitE6OY52EmPz2LgQqBrXgKoNn-EqokJeqZhib3K8WA/formResponse">
         <!-- Các trường ẩn để gửi dữ liệu đến Google Form -->
         <!-- Phần 1: Thông tin cá nhân -->
         <input type="hidden" name="entry.337423888" id="gform-fullname">
@@ -639,6 +689,10 @@
             <button type="button" onclick="resetForm()">Gửi phản hồi khác</button>
         </div>
     </div>
+
+    <div id="loading-overlay" class="loading-overlay hidden">
+        <div class="loading-spinner"></div>
+    </div>
 </div>
 
 <!-- Auto-fill button -->
@@ -657,6 +711,9 @@
 </div>
 
 <script>
+    // URL của Google Form (đã cập nhật với URL thực tế của bạn)
+    const GOOGLE_FORM_URL = 'https://docs.google.com/forms/u/0/d/e/1FAIpQLSeiG4VFitE6OY52EmPz2LgQqBrXgKoNn-EqokJeqZhib3K8WA/formResponse';
+    
     // Current section tracking
     let currentSection = 1;
     const totalSections = 4;
@@ -889,30 +946,36 @@
             return;
         }
         
+        // Hiển thị loading overlay
+        document.getElementById('loading-overlay').classList.remove('hidden');
+        
         // Chuẩn bị dữ liệu cho Google Form
         prepareGoogleFormData();
         
-        // Gửi form trực tiếp
+        // Gửi form
         document.getElementById('survey-form').submit();
         
-        // Hiển thị thông báo thành công ngay lập tức
-        document.getElementById('survey-form').classList.add('hidden');
-        document.getElementById('success-message').classList.remove('hidden');
-        
-        // Nếu đang chạy auto-fill, tiếp tục với form tiếp theo
-        if (autoFillRunning) {
-            currentFillCount++;
-            if (currentFillCount < totalFillCount) {
-                setTimeout(function() {
-                    resetForm();
-                    autoFillForm();
-                }, 1000);
-            } else {
-                autoFillRunning = false;
-                currentFillCount = 0;
-                console.log("Đã hoàn thành việc điền " + totalFillCount + " form!");
+        // Hiển thị thông báo thành công sau khi gửi (sau 2 giây)
+        setTimeout(function() {
+            document.getElementById('loading-overlay').classList.add('hidden');
+            document.getElementById('survey-form').classList.add('hidden');
+            document.getElementById('success-message').classList.remove('hidden');
+            
+            // Nếu đang chạy auto-fill, tiếp tục với form tiếp theo
+            if (autoFillRunning) {
+                currentFillCount++;
+                if (currentFillCount < totalFillCount) {
+                    setTimeout(function() {
+                        resetForm();
+                        autoFillForm();
+                    }, 1000);
+                } else {
+                    autoFillRunning = false;
+                    currentFillCount = 0;
+                    console.log("Đã hoàn thành việc điền " + totalFillCount + " form!");
+                }
             }
-        }
+        }, 2000);
     }
 
     // Reset form to start a new submission
