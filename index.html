@@ -1,0 +1,916 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Khảo sát sinh viên</title>
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: 'Roboto', Arial, sans-serif;
+    }
+
+    body {
+        background-color: #f0ebf8;
+        color: #202124;
+        line-height: 1.6;
+    }
+
+    .container {
+        max-width: 768px;
+        margin: 20px auto;
+        padding: 0 15px;
+    }
+
+    .form-header {
+        margin-bottom: 20px;
+    }
+
+    .progress-bar {
+        height: 4px;
+        background-color: #e0e0e0;
+        border-radius: 2px;
+        margin-bottom: 10px;
+    }
+
+    .progress {
+        height: 100%;
+        background-color: #673ab7;
+        border-radius: 2px;
+        transition: width 0.3s ease;
+    }
+
+    .page-indicator {
+        text-align: center;
+        font-size: 14px;
+        color: #5f6368;
+        background-color: #673ab7;
+        color: white;
+        padding: 8px 16px;
+        border-radius: 16px;
+        display: inline-block;
+    }
+
+    .form-card {
+        background-color: #fff;
+        border-radius: 8px;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        padding: 24px;
+        margin-bottom: 12px;
+    }
+
+    .section-title {
+        margin-bottom: 20px;
+        color: #202124;
+    }
+
+    .section-title h2 {
+        font-size: 18px;
+        font-weight: 500;
+    }
+
+    .question {
+        margin-bottom: 16px;
+    }
+
+    .question label {
+        display: block;
+        font-size: 16px;
+        font-weight: 500;
+        margin-bottom: 12px;
+    }
+
+    .required {
+        color: #d93025;
+    }
+
+    input[type="text"],
+    textarea {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid #dadce0;
+        border-radius: 4px;
+        font-size: 14px;
+        outline: none;
+        transition: border 0.2s;
+    }
+
+    input[type="text"]:focus,
+    textarea:focus {
+        border-color: #673ab7;
+    }
+
+    textarea {
+        min-height: 100px;
+        resize: vertical;
+    }
+
+    .radio-group {
+        margin-top: 8px;
+    }
+
+    .radio-option {
+        display: flex;
+        align-items: center;
+        margin-bottom: 8px;
+    }
+
+    .radio-option input[type="radio"] {
+        margin-right: 10px;
+        width: 20px;
+        height: 20px;
+        accent-color: #673ab7;
+    }
+
+    .rating-grid {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .rating-header {
+        display: flex;
+        margin-bottom: 8px;
+    }
+
+    .rating-label {
+        flex: 1;
+        padding: 8px 0;
+    }
+
+    .rating-options {
+        display: flex;
+        justify-content: space-around;
+        width: 250px;
+    }
+
+    .rating-options span {
+        width: 40px;
+        text-align: center;
+    }
+
+    .rating-row {
+        display: flex;
+        margin-bottom: 8px;
+        align-items: center;
+    }
+
+    .rating-row .rating-options {
+        display: flex;
+        justify-content: space-around;
+    }
+
+    .rating-row .rating-options input[type="radio"] {
+        width: 20px;
+        height: 20px;
+        accent-color: #673ab7;
+    }
+
+    .navigation {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 24px;
+    }
+
+    .back-btn,
+    .next-btn,
+    .submit-btn {
+        padding: 10px 24px;
+        border: none;
+        border-radius: 4px;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: background-color 0.2s;
+    }
+
+    .back-btn {
+        background-color: #f1f3f4;
+        color: #5f6368;
+    }
+
+    .next-btn,
+    .submit-btn {
+        background-color: #673ab7;
+        color: white;
+    }
+
+    .back-btn:hover {
+        background-color: #e8eaed;
+    }
+
+    .next-btn:hover,
+    .submit-btn:hover {
+        background-color: #5e35b1;
+    }
+
+    .hidden {
+        display: none;
+    }
+
+    .success-card {
+        background-color: #fff;
+        border-radius: 8px;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        padding: 24px;
+        text-align: center;
+    }
+
+    .success-card h2 {
+        color: #673ab7;
+        margin-bottom: 16px;
+    }
+
+    .success-card p {
+        margin-bottom: 16px;
+        color: #5f6368;
+    }
+
+    .success-card button {
+        margin-top: 16px;
+        padding: 10px 24px;
+        background-color: #673ab7;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+    }
+
+    .success-card button:hover {
+        background-color: #5e35b1;
+    }
+
+    .error-message {
+        color: #d93025;
+        font-size: 12px;
+        margin-top: 4px;
+        display: none;
+    }
+
+    .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+    }
+
+    .loading-spinner {
+        width: 50px;
+        height: 50px;
+        border: 5px solid #f3f3f3;
+        border-top: 5px solid #673ab7;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    /* Responsive styles */
+    @media (max-width: 600px) {
+        .form-card {
+            padding: 16px;
+        }
+        
+        .rating-options {
+            width: 200px;
+        }
+        
+        .navigation {
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .back-btn, .next-btn, .submit-btn {
+            width: 100%;
+        }
+    }
+</style>
+</head>
+<body>
+<div class="container">
+    <div class="form-header">
+        <div class="progress-bar">
+            <div class="progress" id="progress"></div>
+        </div>
+        <div class="page-indicator">
+            <span id="current-page">1</span> / <span id="total-pages">4</span>
+        </div>
+    </div>
+
+    <!-- Thêm iframe ẩn để gửi dữ liệu -->
+    <iframe name="hidden-iframe" id="hidden-iframe" style="display:none;"></iframe>
+
+    <!-- Form chính để người dùng nhập liệu -->
+    <form id="survey-form" target="hidden-iframe">
+        <!-- Các trường ẩn để gửi dữ liệu đến Google Form -->
+        <!-- Phần 1: Thông tin cá nhân -->
+        <input type="hidden" name="entry.337423888" id="gform-fullname">
+        <input type="hidden" name="entry.1219175677" id="gform-gender">
+        <input type="hidden" name="entry.828736123" id="gform-department">
+        <input type="hidden" name="entry.931868323" id="gform-student-year">
+        <input type="hidden" name="entry.1219175677" id="gform-employed">
+        
+        <!-- Phần 2: Đánh giá chất lượng đào tạo -->
+        <input type="hidden" name="entry.1558895841" id="gform-rating-program">
+        <input type="hidden" name="entry.1267742492" id="gform-rating-teaching">
+        <input type="hidden" name="entry.1038785704" id="gform-rating-facilities">
+        <input type="hidden" name="entry.1872705413" id="gform-rating-activities">
+        <input type="hidden" name="entry.1564888099" id="gform-rating-support">
+        <input type="hidden" name="entry.652975877" id="gform-rating-job-advice">
+        
+        <!-- Phần 3: Đánh giá khả năng việc làm -->
+        <input type="hidden" name="entry.1199984923" id="gform-rating-confidence">
+        <input type="hidden" name="entry.1278735691" id="gform-rating-skills">
+        <input type="hidden" name="entry.970990409" id="gform-rating-degree">
+        <input type="hidden" name="entry.2035099767" id="gform-rating-job-support">
+        <input type="hidden" name="entry.99774372" id="gform-rating-job-opportunities">
+        
+        <!-- Phần 4: Ý kiến đóng góp -->
+        <input type="hidden" name="entry.1894145518" id="gform-factors">
+        <input type="hidden" name="entry.1803628885" id="gform-suggestions">
+
+        <!-- Section 1: Thông tin cá nhân -->
+        <div class="form-section" id="section-1">
+            <div class="form-card">
+                <div class="question">
+                    <label for="fullname">1. Họ và tên? <span class="required">*</span></label>
+                    <input type="text" id="fullname" name="fullname" placeholder="Văn bản câu trả lời ngắn" required>
+                    <div class="error-message" id="fullname-error">Vui lòng nhập họ và tên</div>
+                </div>
+            </div>
+
+            <div class="form-card">
+                <div class="question">
+                    <label>2. Giới tính? <span class="required">*</span></label>
+                    <div class="radio-group">
+                        <div class="radio-option">
+                            <input type="radio" id="gender-male" name="gender" value="Nam" required>
+                            <label for="gender-male">Nam</label>
+                        </div>
+                        <div class="radio-option">
+                            <input type="radio" id="gender-female" name="gender" value="Nữ">
+                            <label for="gender-female">Nữ</label>
+                        </div>
+                        <div class="radio-option">
+                            <input type="radio" id="gender-other" name="gender" value="Khác">
+                            <label for="gender-other">Khác</label>
+                        </div>
+                    </div>
+                    <div class="error-message" id="gender-error">Vui lòng chọn giới tính</div>
+                </div>
+            </div>
+
+            <div class="form-card">
+                <div class="question">
+                    <label for="department">3. Khoa? <span class="required">*</span></label>
+                    <input type="text" id="department" name="department" placeholder="Văn bản câu trả lời ngắn" required>
+                    <div class="error-message" id="department-error">Vui lòng nhập khoa</div>
+                </div>
+            </div>
+
+            <div class="form-card">
+                <div class="question">
+                    <label for="student-year">4. Sinh viên năm/Năm tốt nghiệp? <span class="required">*</span></label>
+                    <input type="text" id="student-year" name="student-year" placeholder="Văn bản câu trả lời ngắn" required>
+                    <div class="error-message" id="student-year-error">Vui lòng nhập năm học/tốt nghiệp</div>
+                </div>
+            </div>
+
+            <div class="form-card">
+                <div class="question">
+                    <label>5. Hiện tại bạn đã có việc làm chưa? <span class="required">*</span></label>
+                    <div class="radio-group">
+                        <div class="radio-option">
+                            <input type="radio" id="employed-yes" name="employed" value="Có" required>
+                            <label for="employed-yes">Có</label>
+                        </div>
+                        <div class="radio-option">
+                            <input type="radio" id="employed-no" name="employed" value="Chưa">
+                            <label for="employed-no">Chưa</label>
+                        </div>
+                    </div>
+                    <div class="error-message" id="employed-error">Vui lòng chọn trạng thái việc làm</div>
+                </div>
+            </div>
+
+            <div class="navigation">
+                <div></div> <!-- Placeholder for flex spacing -->
+                <button type="button" class="next-btn" onclick="nextSection(1)">Tiếp theo</button>
+            </div>
+        </div>
+
+        <!-- Section 2: Đánh giá chất lượng đào tạo -->
+        <div class="form-section hidden" id="section-2">
+            <div class="form-card">
+                <div class="section-title">
+                    <h2>Đánh giá chất lượng đào tạo</h2>
+                </div>
+                <div class="question">
+                    <label>1. Mức độ hài lòng của bạn với chất lượng đào tạo của khoa bạn theo các tiêu chí sau? <span class="required">*</span></label>
+                    <div class="rating-grid">
+                        <div class="rating-header">
+                            <div class="rating-label"></div>
+                            <div class="rating-options">
+                                <span>1</span>
+                                <span>2</span>
+                                <span>3</span>
+                                <span>4</span>
+                                <span>5</span>
+                            </div>
+                        </div>
+                        <div class="rating-row">
+                            <div class="rating-label">Chương trình đào tạo</div>
+                            <div class="rating-options">
+                                <input type="radio" name="rating-program" value="1" required>
+                                <input type="radio" name="rating-program" value="2">
+                                <input type="radio" name="rating-program" value="3">
+                                <input type="radio" name="rating-program" value="4">
+                                <input type="radio" name="rating-program" value="5">
+                            </div>
+                        </div>
+                        <div class="rating-row">
+                            <div class="rating-label">Chất lượng giảng dạy</div>
+                            <div class="rating-options">
+                                <input type="radio" name="rating-teaching" value="1" required>
+                                <input type="radio" name="rating-teaching" value="2">
+                                <input type="radio" name="rating-teaching" value="3">
+                                <input type="radio" name="rating-teaching" value="4">
+                                <input type="radio" name="rating-teaching" value="5">
+                            </div>
+                        </div>
+                        <div class="rating-row">
+                            <div class="rating-label">Cơ sở vật chất</div>
+                            <div class="rating-options">
+                                <input type="radio" name="rating-facilities" value="1" required>
+                                <input type="radio" name="rating-facilities" value="2">
+                                <input type="radio" name="rating-facilities" value="3">
+                                <input type="radio" name="rating-facilities" value="4">
+                                <input type="radio" name="rating-facilities" value="5">
+                            </div>
+                        </div>
+                        <div class="rating-row">
+                            <div class="rating-label">Hoạt động ngoại khóa</div>
+                            <div class="rating-options">
+                                <input type="radio" name="rating-activities" value="1" required>
+                                <input type="radio" name="rating-activities" value="2">
+                                <input type="radio" name="rating-activities" value="3">
+                                <input type="radio" name="rating-activities" value="4">
+                                <input type="radio" name="rating-activities" value="5">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="error-message" id="rating-error">Vui lòng đánh giá tất cả các mục</div>
+                </div>
+            </div>
+
+            <div class="form-card">
+                <div class="question">
+                    <label>2. Mức độ hài lòng của bạn với chất lượng đào tạo của khoa bạn theo các tiêu chí sau? <span class="required">*</span></label>
+                    <div class="rating-grid">
+                        <div class="rating-header">
+                            <div class="rating-label"></div>
+                            <div class="rating-options">
+                                <span>1</span>
+                                <span>2</span>
+                                <span>3</span>
+                                <span>4</span>
+                                <span>5</span>
+                            </div>
+                        </div>
+                        <div class="rating-row">
+                            <div class="rating-label">Tư vấn hỗ trợ</div>
+                            <div class="rating-options">
+                                <input type="radio" name="rating-support" value="1" required>
+                                <input type="radio" name="rating-support" value="2">
+                                <input type="radio" name="rating-support" value="3">
+                                <input type="radio" name="rating-support" value="4">
+                                <input type="radio" name="rating-support" value="5">
+                            </div>
+                        </div>
+                        <div class="rating-row">
+                            <div class="rating-label">Tư vấn việc làm</div>
+                            <div class="rating-options">
+                                <input type="radio" name="rating-job-advice" value="1" required>
+                                <input type="radio" name="rating-job-advice" value="2">
+                                <input type="radio" name="rating-job-advice" value="3">
+                                <input type="radio" name="rating-job-advice" value="4">
+                                <input type="radio" name="rating-job-advice" value="5">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="navigation">
+                <button type="button" class="back-btn" onclick="prevSection(2)">Quay lại</button>
+                <button type="button" class="next-btn" onclick="nextSection(2)">Tiếp theo</button>
+            </div>
+        </div>
+
+        <!-- Section 3: Khả năng có việc làm -->
+        <div class="form-section hidden" id="section-3">
+            <div class="form-card">
+                <div class="section-title">
+                    <h2>Khả năng có việc làm ngay sau khi ra trường của sinh viên ngành kế toán của Đại học Duy Tân</h2>
+                </div>
+                <div class="question">
+                    <label>Khả năng có việc làm ngay sau khi ra trường của sinh viên ngành kế toán của Đại học Duy Tân <span class="required">*</span></label>
+                    <div class="rating-grid">
+                        <div class="rating-header">
+                            <div class="rating-label"></div>
+                            <div class="rating-options">
+                                <span>1</span>
+                                <span>2</span>
+                                <span>3</span>
+                                <span>4</span>
+                                <span>5</span>
+                            </div>
+                        </div>
+                        <div class="rating-row">
+                            <div class="rating-label">Tôi cảm thấy tự tin về khả năng tìm việc</div>
+                            <div class="rating-options">
+                                <input type="radio" name="rating-confidence" value="1" required>
+                                <input type="radio" name="rating-confidence" value="2">
+                                <input type="radio" name="rating-confidence" value="3">
+                                <input type="radio" name="rating-confidence" value="4">
+                                <input type="radio" name="rating-confidence" value="5">
+                            </div>
+                        </div>
+                        <div class="rating-row">
+                            <div class="rating-label">Tôi đã có được các kỹ năng cần thiết</div>
+                            <div class="rating-options">
+                                <input type="radio" name="rating-skills" value="1" required>
+                                <input type="radio" name="rating-skills" value="2">
+                                <input type="radio" name="rating-skills" value="3">
+                                <input type="radio" name="rating-skills" value="4">
+                                <input type="radio" name="rating-skills" value="5">
+                            </div>
+                        </div>
+                        <div class="rating-row">
+                            <div class="rating-label">Tôi tin rằng các nhà tuyển dụng đánh giá cao bằng cấp của tôi</div>
+                            <div class="rating-options">
+                                <input type="radio" name="rating-degree" value="1" required>
+                                <input type="radio" name="rating-degree" value="2">
+                                <input type="radio" name="rating-degree" value="3">
+                                <input type="radio" name="rating-degree" value="4">
+                                <input type="radio" name="rating-degree" value="5">
+                            </div>
+                        </div>
+                        <div class="rating-row">
+                            <div class="rating-label">Tôi đã nhận được sự hỗ trợ tìm việc từ nhà trường</div>
+                            <div class="rating-options">
+                                <input type="radio" name="rating-job-support" value="1" required>
+                                <input type="radio" name="rating-job-support" value="2">
+                                <input type="radio" name="rating-job-support" value="3">
+                                <input type="radio" name="rating-job-support" value="4">
+                                <input type="radio" name="rating-job-support" value="5">
+                            </div>
+                        </div>
+                        <div class="rating-row">
+                            <div class="rating-label">Tôi hài lòng với cơ hội việc làm trong ngành của mình</div>
+                            <div class="rating-options">
+                                <input type="radio" name="rating-job-opportunities" value="1" required>
+                                <input type="radio" name="rating-job-opportunities" value="2">
+                                <input type="radio" name="rating-job-opportunities" value="3">
+                                <input type="radio" name="rating-job-opportunities" value="4">
+                                <input type="radio" name="rating-job-opportunities" value="5">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="navigation">
+                <button type="button" class="back-btn" onclick="prevSection(3)">Quay lại</button>
+                <button type="button" class="next-btn" onclick="nextSection(3)">Tiếp theo</button>
+            </div>
+        </div>
+
+        <!-- Section 4: Ý kiến đóng góp -->
+        <div class="form-section hidden" id="section-4">
+            <div class="form-card">
+                <div class="section-title">
+                    <h2>Ý kiến đóng góp</h2>
+                </div>
+                <div class="question">
+                    <label for="factors">1. Theo bạn, yếu tố nào ảnh hưởng lớn nhất đến khả năng tìm việc làm ngay sau khi ra trường? <span class="required">*</span></label>
+                    <textarea id="factors" name="factors" placeholder="Văn bản câu trả lời ngắn" required></textarea>
+                    <div class="error-message" id="factors-error">Vui lòng nhập câu trả lời</div>
+                </div>
+            </div>
+
+            <div class="form-card">
+                <div class="question">
+                    <label for="suggestions">2. Bạn có đề xuất gì để nâng cao khả năng có việc làm ngay sau khi ra trường? <span class="required">*</span></label>
+                    <textarea id="suggestions" name="suggestions" placeholder="Văn bản câu trả lời ngắn" required></textarea>
+                    <div class="error-message" id="suggestions-error">Vui lòng nhập câu trả lời</div>
+                </div>
+            </div>
+
+            <div class="navigation">
+                <button type="button" class="back-btn" onclick="prevSection(4)">Quay lại</button>
+                <button type="button" class="submit-btn" onclick="submitForm()">Gửi</button>
+            </div>
+        </div>
+    </form>
+
+    <div id="success-message" class="hidden">
+        <div class="success-card">
+            <h2>Cảm ơn bạn đã hoàn thành khảo sát!</h2>
+            <p>Phản hồi của bạn đã được ghi nhận.</p>
+            <button type="button" onclick="resetForm()">Gửi phản hồi khác</button>
+        </div>
+    </div>
+
+    <div id="loading-overlay" class="loading-overlay hidden">
+        <div class="loading-spinner"></div>
+    </div>
+</div>
+
+<script>
+    // URL của Google Form (đã cập nhật với URL thực tế của bạn)
+    const GOOGLE_FORM_URL = 'https://docs.google.com/forms/u/0/d/e/1FAIpQLSeiG4VFitE6OY52EmPz2LgQqBrXgKoNn-EqokJeqZhib3K8WA/formResponse';
+    
+    // Current section tracking
+    let currentSection = 1;
+    const totalSections = 4;
+
+    // Update progress bar
+    function updateProgress() {
+        const progressPercentage = ((currentSection - 1) / (totalSections - 1)) * 100;
+        document.getElementById('progress').style.width = `${progressPercentage}%`;
+        document.getElementById('current-page').textContent = currentSection;
+        document.getElementById('total-pages').textContent = totalSections;
+    }
+
+    // Hide all error messages
+    function hideAllErrors() {
+        const errorMessages = document.querySelectorAll('.error-message');
+        errorMessages.forEach(msg => {
+            msg.style.display = 'none';
+        });
+    }
+
+    // Show error message for a specific field
+    function showError(fieldId) {
+        const errorElement = document.getElementById(`${fieldId}-error`);
+        if (errorElement) {
+            errorElement.style.display = 'block';
+        }
+    }
+
+    // Navigate to next section
+    function nextSection(sectionNumber) {
+        // Validate current section before proceeding
+        if (!validateSection(sectionNumber)) {
+            return;
+        }
+        
+        document.getElementById(`section-${sectionNumber}`).classList.add('hidden');
+        document.getElementById(`section-${sectionNumber + 1}`).classList.remove('hidden');
+        currentSection = sectionNumber + 1;
+        updateProgress();
+        window.scrollTo(0, 0);
+        hideAllErrors();
+    }
+
+    // Navigate to previous section
+    function prevSection(sectionNumber) {
+        document.getElementById(`section-${sectionNumber}`).classList.add('hidden');
+        document.getElementById(`section-${sectionNumber - 1}`).classList.remove('hidden');
+        currentSection = sectionNumber - 1;
+        updateProgress();
+        window.scrollTo(0, 0);
+        hideAllErrors();
+    }
+
+    // Validate section before proceeding
+    function validateSection(sectionNumber) {
+        const section = document.getElementById(`section-${sectionNumber}`);
+        let isValid = true;
+        hideAllErrors();
+        
+        // Section 1 validation
+        if (sectionNumber === 1) {
+            const fullname = document.getElementById('fullname');
+            const department = document.getElementById('department');
+            const studentYear = document.getElementById('student-year');
+            const genderChecked = document.querySelector('input[name="gender"]:checked');
+            const employedChecked = document.querySelector('input[name="employed"]:checked');
+            
+            if (!fullname.value.trim()) {
+                showError('fullname');
+                isValid = false;
+            }
+            
+            if (!department.value.trim()) {
+                showError('department');
+                isValid = false;
+            }
+            
+            if (!studentYear.value.trim()) {
+                showError('student-year');
+                isValid = false;
+            }
+            
+            if (!genderChecked) {
+                showError('gender');
+                isValid = false;
+            }
+            
+            if (!employedChecked) {
+                showError('employed');
+                isValid = false;
+            }
+        }
+        
+        // Section 2 validation
+        else if (sectionNumber === 2) {
+            const ratingProgram = document.querySelector('input[name="rating-program"]:checked');
+            const ratingTeaching = document.querySelector('input[name="rating-teaching"]:checked');
+            const ratingFacilities = document.querySelector('input[name="rating-facilities"]:checked');
+            const ratingActivities = document.querySelector('input[name="rating-activities"]:checked');
+            const ratingSupport = document.querySelector('input[name="rating-support"]:checked');
+            const ratingJobAdvice = document.querySelector('input[name="rating-job-advice"]:checked');
+            
+            if (!ratingProgram || !ratingTeaching || !ratingFacilities || !ratingActivities || !ratingSupport || !ratingJobAdvice) {
+                showError('rating');
+                isValid = false;
+            }
+        }
+        
+        // Section 3 validation
+        else if (sectionNumber === 3) {
+            const ratingConfidence = document.querySelector('input[name="rating-confidence"]:checked');
+            const ratingSkills = document.querySelector('input[name="rating-skills"]:checked');
+            const ratingDegree = document.querySelector('input[name="rating-degree"]:checked');
+            const ratingJobSupport = document.querySelector('input[name="rating-job-support"]:checked');
+            const ratingJobOpportunities = document.querySelector('input[name="rating-job-opportunities"]:checked');
+            
+            if (!ratingConfidence || !ratingSkills || !ratingDegree || !ratingJobSupport || !ratingJobOpportunities) {
+                alert('Vui lòng đánh giá tất cả các mục');
+                isValid = false;
+            }
+        }
+        
+        // Section 4 validation
+        else if (sectionNumber === 4) {
+            const factors = document.getElementById('factors');
+            const suggestions = document.getElementById('suggestions');
+            
+            if (!factors.value.trim()) {
+                showError('factors');
+                isValid = false;
+            }
+            
+            if (!suggestions.value.trim()) {
+                showError('suggestions');
+                isValid = false;
+            }
+        }
+        
+        return isValid;
+    }
+
+    // Prepare data for Google Form submission
+    function prepareGoogleFormData() {
+        // Phần 1: Thông tin cá nhân
+        document.getElementById('gform-fullname').value = document.getElementById('fullname').value;
+        
+        const genderChecked = document.querySelector('input[name="gender"]:checked');
+        if (genderChecked) {
+            document.getElementById('gform-gender').value = genderChecked.value;
+        }
+        
+        document.getElementById('gform-department').value = document.getElementById('department').value;
+        document.getElementById('gform-student-year').value = document.getElementById('student-year').value;
+        
+        const employedChecked = document.querySelector('input[name="employed"]:checked');
+        if (employedChecked) {
+            document.getElementById('gform-employed').value = employedChecked.value;
+        }
+        
+        // Phần 2: Đánh giá chất lượng đào tạo
+        const ratingProgram = document.querySelector('input[name="rating-program"]:checked');
+        if (ratingProgram) {
+            document.getElementById('gform-rating-program').value = ratingProgram.value;
+        }
+        
+        const ratingTeaching = document.querySelector('input[name="rating-teaching"]:checked');
+        if (ratingTeaching) {
+            document.getElementById('gform-rating-teaching').value = ratingTeaching.value;
+        }
+        
+        const ratingFacilities = document.querySelector('input[name="rating-facilities"]:checked');
+        if (ratingFacilities) {
+            document.getElementById('gform-rating-facilities').value = ratingFacilities.value;
+        }
+        
+        const ratingActivities = document.querySelector('input[name="rating-activities"]:checked');
+        if (ratingActivities) {
+            document.getElementById('gform-rating-activities').value = ratingActivities.value;
+        }
+        
+        const ratingSupport = document.querySelector('input[name="rating-support"]:checked');
+        if (ratingSupport) {
+            document.getElementById('gform-rating-support').value = ratingSupport.value;
+        }
+        
+        const ratingJobAdvice = document.querySelector('input[name="rating-job-advice"]:checked');
+        if (ratingJobAdvice) {
+            document.getElementById('gform-rating-job-advice').value = ratingJobAdvice.value;
+        }
+        
+        // Phần 3: Đánh giá khả năng việc làm
+        const ratingConfidence = document.querySelector('input[name="rating-confidence"]:checked');
+        if (ratingConfidence) {
+            document.getElementById('gform-rating-confidence').value = ratingConfidence.value;
+        }
+        
+        const ratingSkills = document.querySelector('input[name="rating-skills"]:checked');
+        if (ratingSkills) {
+            document.getElementById('gform-rating-skills').value = ratingSkills.value;
+        }
+        
+        const ratingDegree = document.querySelector('input[name="rating-degree"]:checked');
+        if (ratingDegree) {
+            document.getElementById('gform-rating-degree').value = ratingDegree.value;
+        }
+        
+        const ratingJobSupport = document.querySelector('input[name="rating-job-support"]:checked');
+        if (ratingJobSupport) {
+            document.getElementById('gform-rating-job-support').value = ratingJobSupport.value;
+        }
+        
+        const ratingJobOpportunities = document.querySelector('input[name="rating-job-opportunities"]:checked');
+        if (ratingJobOpportunities) {
+            document.getElementById('gform-rating-job-opportunities').value = ratingJobOpportunities.value;
+        }
+        
+        // Phần 4: Ý kiến đóng góp
+        document.getElementById('gform-factors').value = document.getElementById('factors').value;
+        document.getElementById('gform-suggestions').value = document.getElementById('suggestions').value;
+    }
+
+    // Submit form to Google Form
+    function submitForm() {
+        if (!validateSection(currentSection)) {
+            return;
+        }
+        
+        // Hiển thị loading overlay
+        document.getElementById('loading-overlay').classList.remove('hidden');
+        
+        // Chuẩn bị dữ liệu cho Google Form
+        prepareGoogleFormData();
+        
+        // Cập nhật action URL của form
+        document.getElementById('survey-form').action = GOOGLE_FORM_URL;
+        
+        // Gửi form
+        document.getElementById('survey-form').submit();
+        
+        // Hiển thị thông báo thành công sau khi gửi (sau 2 giây)
+        setTimeout(function() {
+            document.getElementById('loading-overlay').classList.add('hidden');
+            document.getElementById('survey-form').classList.add('hidden');
+            document.getElementById('success-message').classList.remove('hidden');
+        }, 2000);
+    }
+
+    // Reset form to start a new submission
+    function resetForm() {
+        document.getElementById('survey-form').reset();
+        
+        // Hide all sections except the first one
+        for (let i = 2; i <= totalSections; i++) {
+            document.getElementById(`section-${i}`).classList.add('hidden');
+        }
+        
+        document.getElementById('section-1').classList.remove('hidden');
+        document.getElementById('survey-form').classList.remove('hidden');
+        document.getElementById('success-message').classList.add('hidden');
+        
+        currentSection = 1;
+        updateProgress();
+        hideAllErrors();
+        window.scrollTo(0, 0);
+    }
+
+    // Initialize progress bar
+    updateProgress();
+</script>
+</body>
+</html>
