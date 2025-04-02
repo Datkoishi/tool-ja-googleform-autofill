@@ -249,52 +249,61 @@
         margin-top: 4px;
         display: none;
     }
-
-    .loading-overlay {
+    
+    /* Auto-fill button styles */
+    .auto-fill-btn {
         position: fixed;
-        top: 0;
-        left: 0;
+        top: 10px;
+        right: 10px;
+        padding: 10px 15px;
+        background-color: #673ab7;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        z-index: 9999;
+    }
+    
+    .auto-fill-btn:hover {
+        background-color: #5e35b1;
+    }
+    
+    .auto-fill-options {
+        position: fixed;
+        top: 50px;
+        right: 10px;
+        background-color: white;
+        border-radius: 4px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        padding: 15px;
+        z-index: 9999;
+        display: none;
+    }
+    
+    .auto-fill-options.show {
+        display: block;
+    }
+    
+    .auto-fill-options label {
+        display: block;
+        margin-bottom: 10px;
+    }
+    
+    .auto-fill-options button {
         width: 100%;
-        height: 100%;
-        background-color: rgba(0, 0, 0, 0.5);
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        z-index: 1000;
+        padding: 8px;
+        background-color: #673ab7;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        margin-top: 10px;
     }
-
-    .loading-spinner {
-        width: 50px;
-        height: 50px;
-        border: 5px solid #f3f3f3;
-        border-top: 5px solid #673ab7;
-        border-radius: 50%;
-        animation: spin 1s linear infinite;
-    }
-
-    @keyframes spin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
-    }
-
-    /* Responsive styles */
-    @media (max-width: 600px) {
-        .form-card {
-            padding: 16px;
-        }
-        
-        .rating-options {
-            width: 200px;
-        }
-        
-        .navigation {
-            flex-direction: column;
-            gap: 10px;
-        }
-        
-        .back-btn, .next-btn, .submit-btn {
-            width: 100%;
-        }
+    
+    .auto-fill-options button:hover {
+        background-color: #5e35b1;
     }
 </style>
 </head>
@@ -309,11 +318,8 @@
         </div>
     </div>
 
-    <!-- Thêm iframe ẩn để gửi dữ liệu -->
-    <iframe name="hidden-iframe" id="hidden-iframe" style="display:none;"></iframe>
-
     <!-- Form chính để người dùng nhập liệu -->
-    <form id="survey-form" target="hidden-iframe">
+    <form id="survey-form" method="POST" action="https://docs.google.com/forms/u/0/d/e/1FAIpQLSeiG4VFitE6OY52EmPz2LgQqBrXgKoNn-EqokJeqZhib3K8WA/formResponse">
         <!-- Các trường ẩn để gửi dữ liệu đến Google Form -->
         <!-- Phần 1: Thông tin cá nhân -->
         <input type="hidden" name="entry.337423888" id="gform-fullname">
@@ -633,20 +639,33 @@
             <button type="button" onclick="resetForm()">Gửi phản hồi khác</button>
         </div>
     </div>
+</div>
 
-    <div id="loading-overlay" class="loading-overlay hidden">
-        <div class="loading-spinner"></div>
-    </div>
+<!-- Auto-fill button -->
+<button id="auto-fill-btn" class="auto-fill-btn">Tự động điền form</button>
+
+<!-- Auto-fill options panel -->
+<div id="auto-fill-options" class="auto-fill-options">
+    <label>
+        <input type="checkbox" id="auto-submit" checked> Tự động gửi form sau khi điền
+    </label>
+    <label>
+        <input type="number" id="fill-count" min="1" max="100" value="1" style="width: 60px;"> Số lượng form cần điền
+    </label>
+    <button id="start-auto-fill">Bắt đầu điền</button>
+    <button id="close-options">Đóng</button>
 </div>
 
 <script>
-    // URL của Google Form (đã cập nhật với URL thực tế của bạn)
-    const GOOGLE_FORM_URL = 'https://docs.google.com/forms/u/0/d/e/1FAIpQLSeiG4VFitE6OY52EmPz2LgQqBrXgKoNn-EqokJeqZhib3K8WA/formResponse';
-    
     // Current section tracking
     let currentSection = 1;
     const totalSections = 4;
-
+    
+    // Auto-fill tracking
+    let autoFillRunning = false;
+    let currentFillCount = 0;
+    let totalFillCount = 0;
+    
     // Update progress bar
     function updateProgress() {
         const progressPercentage = ((currentSection - 1) / (totalSections - 1)) * 100;
@@ -870,24 +889,30 @@
             return;
         }
         
-        // Hiển thị loading overlay
-        document.getElementById('loading-overlay').classList.remove('hidden');
-        
         // Chuẩn bị dữ liệu cho Google Form
         prepareGoogleFormData();
         
-        // Cập nhật action URL của form
-        document.getElementById('survey-form').action = GOOGLE_FORM_URL;
-        
-        // Gửi form
+        // Gửi form trực tiếp
         document.getElementById('survey-form').submit();
         
-        // Hiển thị thông báo thành công sau khi gửi (sau 2 giây)
-        setTimeout(function() {
-            document.getElementById('loading-overlay').classList.add('hidden');
-            document.getElementById('survey-form').classList.add('hidden');
-            document.getElementById('success-message').classList.remove('hidden');
-        }, 2000);
+        // Hiển thị thông báo thành công ngay lập tức
+        document.getElementById('survey-form').classList.add('hidden');
+        document.getElementById('success-message').classList.remove('hidden');
+        
+        // Nếu đang chạy auto-fill, tiếp tục với form tiếp theo
+        if (autoFillRunning) {
+            currentFillCount++;
+            if (currentFillCount < totalFillCount) {
+                setTimeout(function() {
+                    resetForm();
+                    autoFillForm();
+                }, 1000);
+            } else {
+                autoFillRunning = false;
+                currentFillCount = 0;
+                console.log("Đã hoàn thành việc điền " + totalFillCount + " form!");
+            }
+        }
     }
 
     // Reset form to start a new submission
@@ -908,6 +933,172 @@
         hideAllErrors();
         window.scrollTo(0, 0);
     }
+    
+    // Auto-fill form with random data
+    function autoFillForm() {
+        // Danh sách họ tên ngẫu nhiên
+        const randomNames = [
+            "Nguyễn Văn An", "Trần Thị Bình", "Lê Minh Cường", 
+            "Phạm Thị Dung", "Hoàng Văn Em", "Vũ Thị Phương", 
+            "Đặng Minh Giang", "Bùi Thị Hoa", "Đỗ Văn Inh", 
+            "Ngô Thị Kiều", "Dương Văn Lâm", "Mai Thị Ngọc"
+        ];
+        
+        // Danh sách khoa ngẫu nhiên
+        const randomDepartments = [
+            "Kế toán", "Quản trị kinh doanh", "Công nghệ thông tin", 
+            "Ngoại ngữ", "Xây dựng", "Y dược", 
+            "Luật", "Du lịch", "Điện - Điện tử", 
+            "Cơ khí", "Kinh tế", "Marketing"
+        ];
+        
+        // Danh sách năm học/tốt nghiệp ngẫu nhiên
+        const randomYears = [
+            "Năm 1", "Năm 2", "Năm 3", "Năm 4", 
+            "Tốt nghiệp 2020", "Tốt nghiệp 2021", "Tốt nghiệp 2022", "Tốt nghiệp 2023"
+        ];
+        
+        // Danh sách ý kiến ngẫu nhiên cho câu hỏi về yếu tố ảnh hưởng
+        const randomFactors = [
+            "Kỹ năng chuyên môn và kinh nghiệm thực tế là yếu tố quan trọng nhất.",
+            "Mối quan hệ và kỹ năng giao tiếp ảnh hưởng lớn đến khả năng tìm việc.",
+            "Danh tiếng của trường đại học và chất lượng đào tạo là yếu tố quyết định.",
+            "Khả năng thích ứng với môi trường làm việc và học hỏi nhanh.",
+            "Chứng chỉ ngoại ngữ và tin học là yếu tố quan trọng trong tìm việc hiện nay.",
+            "Thái độ làm việc và sự chủ động trong công việc.",
+            "Kỹ năng mềm và khả năng làm việc nhóm hiệu quả."
+        ];
+        
+        // Danh sách đề xuất ngẫu nhiên
+        const randomSuggestions = [
+            "Tăng cường thực tập và thực hành trong quá trình học để tích lũy kinh nghiệm thực tế.",
+            "Mở rộng mối quan hệ với các doanh nghiệp để tạo cơ hội việc làm cho sinh viên.",
+            "Cập nhật chương trình đào tạo theo nhu cầu thực tế của thị trường lao động.",
+            "Tổ chức các khóa đào tạo kỹ năng mềm và kỹ năng phỏng vấn cho sinh viên sắp tốt nghiệp.",
+            "Tăng cường hợp tác với các doanh nghiệp để tạo cơ hội thực tập và việc làm.",
+            "Cải thiện chất lượng giảng dạy và cập nhật kiến thức mới cho giảng viên.",
+            "Tổ chức các buổi hội thảo, giao lưu với cựu sinh viên thành công để chia sẻ kinh nghiệm."
+        ];
+        
+        // Hàm lấy giá trị ngẫu nhiên từ mảng
+        function getRandomItem(array) {
+            return array[Math.floor(Math.random() * array.length)];
+        }
+        
+        // Hàm lấy số ngẫu nhiên từ min đến max
+        function getRandomNumber(min, max) {
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+        
+        // Hàm chọn radio button ngẫu nhiên và cập nhật trường ẩn tương ứng
+        function selectRandomRadio(name, hiddenFieldId) {
+            const radios = document.getElementsByName(name);
+            const randomIndex = Math.floor(Math.random() * radios.length);
+            radios[randomIndex].checked = true;
+            
+            // Cập nhật trường ẩn nếu có
+            if (hiddenFieldId) {
+                document.getElementById(hiddenFieldId).value = radios[randomIndex].value;
+            }
+            
+            return radios[randomIndex].value;
+        }
+        
+        // Điền thông tin cá nhân (Section 1)
+        const randomName = getRandomItem(randomNames);
+        document.getElementById('fullname').value = randomName;
+        document.getElementById('gform-fullname').value = randomName;
+        
+        const randomDepartment = getRandomItem(randomDepartments);
+        document.getElementById('department').value = randomDepartment;
+        document.getElementById('gform-department').value = randomDepartment;
+        
+        const randomYear = getRandomItem(randomYears);
+        document.getElementById('student-year').value = randomYear;
+        document.getElementById('gform-student-year').value = randomYear;
+        
+        // Chọn giới tính ngẫu nhiên
+        selectRandomRadio('gender', 'gform-gender');
+        
+        // Chọn trạng thái việc làm ngẫu nhiên
+        selectRandomRadio('employed', 'gform-employed');
+        
+        // Chuyển đến Section 2
+        nextSection(1);
+        
+        // Đánh giá chất lượng đào tạo (Section 2)
+        setTimeout(() => {
+            // Chọn đánh giá ngẫu nhiên cho các tiêu chí
+            selectRandomRadio('rating-program', 'gform-rating-program');
+            selectRandomRadio('rating-teaching', 'gform-rating-teaching');
+            selectRandomRadio('rating-facilities', 'gform-rating-facilities');
+            selectRandomRadio('rating-activities', 'gform-rating-activities');
+            selectRandomRadio('rating-support', 'gform-rating-support');
+            selectRandomRadio('rating-job-advice', 'gform-rating-job-advice');
+            
+            // Chuyển đến Section 3
+            nextSection(2);
+            
+            // Đánh giá khả năng việc làm (Section 3)
+            setTimeout(() => {
+                // Chọn đánh giá ngẫu nhiên cho các tiêu chí
+                selectRandomRadio('rating-confidence', 'gform-rating-confidence');
+                selectRandomRadio('rating-skills', 'gform-rating-skills');
+                selectRandomRadio('rating-degree', 'gform-rating-degree');
+                selectRandomRadio('rating-job-support', 'gform-rating-job-support');
+                selectRandomRadio('rating-job-opportunities', 'gform-rating-job-opportunities');
+                
+                // Chuyển đến Section 4
+                nextSection(3);
+                
+                // Ý kiến đóng góp (Section 4)
+                setTimeout(() => {
+                    // Điền ý kiến ngẫu nhiên
+                    const randomFactor = getRandomItem(randomFactors);
+                    document.getElementById('factors').value = randomFactor;
+                    document.getElementById('gform-factors').value = randomFactor;
+                    
+                    const randomSuggestion = getRandomItem(randomSuggestions);
+                    document.getElementById('suggestions').value = randomSuggestion;
+                    document.getElementById('gform-suggestions').value = randomSuggestion;
+                    
+                    // Tự động gửi form nếu được chọn
+                    if (document.getElementById('auto-submit').checked) {
+                        setTimeout(() => {
+                            submitForm();
+                        }, 500);
+                    } else {
+                        console.log("Đã điền xong form với dữ liệu ngẫu nhiên!");
+                    }
+                }, 500);
+            }, 500);
+        }, 500);
+    }
+    
+    // Xử lý sự kiện cho nút tự động điền form
+    document.getElementById('auto-fill-btn').addEventListener('click', function() {
+        document.getElementById('auto-fill-options').classList.toggle('show');
+    });
+    
+    // Xử lý sự kiện cho nút đóng tùy chọn
+    document.getElementById('close-options').addEventListener('click', function() {
+        document.getElementById('auto-fill-options').classList.remove('show');
+    });
+    
+    // Xử lý sự kiện cho nút bắt đầu điền
+    document.getElementById('start-auto-fill').addEventListener('click', function() {
+        totalFillCount = parseInt(document.getElementById('fill-count').value);
+        if (totalFillCount < 1) totalFillCount = 1;
+        
+        autoFillRunning = true;
+        currentFillCount = 0;
+        
+        document.getElementById('auto-fill-options').classList.remove('show');
+        
+        // Bắt đầu điền form đầu tiên
+        resetForm();
+        autoFillForm();
+    });
 
     // Initialize progress bar
     updateProgress();
